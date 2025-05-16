@@ -122,8 +122,9 @@
             { days: [1, 2, 3, 4, 5], startTime: "15:45", endTime: "17:45", taskName: "Physics Problem Solving", subject: "Physics", type: "Problem Solving" },
             { days: [1, 2, 3, 4, 5], startTime: "17:45", endTime: "18:30", taskName: "Short Break / Snack", type: "Break" },
             { days: [1, 2, 3, 4, 5], startTime: "18:30", endTime: "20:30", taskName: "Chemistry Problem Solving", subject: "Chemistry", type: "Problem Solving" },
-            { days: [1, 2, 3, 4, 5], startTime: "20:30", endTime: "22:30", taskName: "Math Problem Solving", subject: "Math", type: "Problem Solving" },
-            { days: [1, 2, 3, 4, 5], startTime: "22:30", endTime: "23:59", taskName: "Dinner & Wind Down", type: "Personal" },
+            { days: [1, 2, 3, 4, 5], startTime: "20:30", endTime: "20:45", taskName: "Break", type: "Break" }, // New break
+            { days: [1, 2, 3, 4, 5], startTime: "20:45", endTime: "22:45", taskName: "Math Problem Solving", subject: "Math", type: "Problem Solving" }, // Adjusted start time
+            { days: [1, 2, 3, 4, 5], startTime: "22:45", endTime: "23:59", taskName: "Dinner & Wind Down", type: "Personal" }, // Adjusted start time (reduces duration)
             
             // Weekend Schedule (Saturday & Sunday)
             { days: [0, 6], startTime: "00:00", endTime: "08:00", taskName: "Sleep", type: "Personal" },
@@ -202,19 +203,6 @@
                 const startTime = timeStringToDate(task.startTime, now);
                 const endTime = timeStringToDate(task.endTime, now);
                 
-                // Handle tasks that span across midnight (e.g. 22:00 to 02:00)
-                // For this simplified version, we assume tasks end within the same day or at 23:59.
-                // A more robust solution would handle multi-day tasks.
-                if (endTime < startTime) { // e.g. endTime is 02:00 and startTime is 22:00
-                    // This logic is simplified; for tasks ending next day, more complex date handling is needed.
-                    // For now, assume tasks are within a 24hr window starting from 00:00.
-                    // If current time is after start OR before end (on the next day concept)
-                    // This part needs careful thought for proper overnight task handling.
-                    // For this version, we'll keep it simple: tasks are within the same day.
-                    // If a task is 22:30 - 23:59, it's fine.
-                }
-
-
                 if (now >= startTime && now < endTime) {
                     return task;
                 }
@@ -238,12 +226,9 @@
                     const taskStartDate = timeStringToDate(task.startTime, now);
                     const taskEndDate = timeStringToDate(task.endTime, now);
                     
-                    // Ensure taskEndDate is after taskStartDate, especially for tasks ending at 23:59
                     if (taskEndDate <= taskStartDate && task.endTime === "23:59") {
-                         taskEndDate.setDate(taskEndDate.getDate() + 1); // Effectively makes it end of day
-                         taskEndDate.setHours(23,59,59,999);
+                         taskEndDate.setHours(23,59,59,999); // Ensure end of day is correctly handled
                     }
-
 
                     const totalDuration = taskEndDate - taskStartDate;
                     const elapsedDuration = now - taskStartDate;
@@ -252,10 +237,6 @@
                     if (totalDuration > 0) {
                          progressPercentage = Math.max(0, Math.min(100, (elapsedDuration / totalDuration) * 100));
                     }
-
-
-                    const timeElapsed = new Date(elapsedDuration);
-                    const timeRemaining = new Date(totalDuration - elapsedDuration);
 
                     const formatDuration = (ms) => {
                         if (ms < 0) ms = 0;
@@ -276,9 +257,8 @@
                         <p class="text-center text-sm mt-1">${progressPercentage.toFixed(1)}% complete</p>
                     `;
                 } else {
-                    currentTaskProgressEl.innerHTML = ""; // Clear progress if no specific task times
+                    currentTaskProgressEl.innerHTML = ""; 
                 }
-
 
             } else {
                 currentTaskDisplayEl.innerHTML = `<p class="text-xl">No current task scheduled. Enjoy your free time!</p>`;
@@ -289,7 +269,7 @@
         function displayFullSchedule() {
             const now = new Date();
             const currentDay = now.getDay();
-            scheduleDisplayEl.innerHTML = ''; // Clear previous entries
+            scheduleDisplayEl.innerHTML = ''; 
 
             const todayTasks = dailySchedule.filter(task => task.days.includes(currentDay))
                                         .sort((a,b) => timeStringToDate(a.startTime) - timeStringToDate(b.startTime));
@@ -316,7 +296,6 @@
                      taskEl.classList.add('current', 'bg-green-500', 'bg-opacity-30');
                 }
 
-
                 let subjectInfo = task.subject ? `(${task.subject})` : '';
                 taskEl.innerHTML = `
                     <p class="font-semibold text-md">${task.taskName} ${subjectInfo}</p>
@@ -326,25 +305,21 @@
             });
         }
 
-
         // --- INITIALIZATION & INTERVALS ---
         function initApp() {
             updateClock();
             updateDDayCountdown();
             updateCurrentTaskDisplay();
-            displayFullSchedule(); // Display the full schedule once on load
+            displayFullSchedule(); 
 
             setInterval(updateClock, 1000);
             setInterval(updateDDayCountdown, 1000);
             setInterval(() => {
                 updateCurrentTaskDisplay();
-                // Re-render schedule less frequently, or only when day changes / current task changes significantly
-                // For simplicity, we can update it along with current task or on a slightly longer interval
                 displayFullSchedule(); 
-            }, 5000); // Update current task and schedule view every 5 seconds
+            }, 5000); 
         }
 
-        // Wait for the DOM to be fully loaded before running the script
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 
