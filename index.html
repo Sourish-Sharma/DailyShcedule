@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accountability Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Tailwind gray-900 */
+            color: #D1D5DB; /* Tailwind gray-300 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .card {
+            background-color: #1F2937; /* Tailwind gray-800 */
+            border-radius: 0.75rem; /* Tailwind rounded-xl */
+            padding: 1.5rem; /* Tailwind p-6 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 800px; /* Max width for larger cards */
+            margin-bottom: 1.5rem;
+        }
+        .header-card {
+            background-color: #374151; /* Tailwind gray-700 */
+            color: #F3F4F6; /* Tailwind gray-100 */
+        }
+        .highlight-text {
+            color: #34D399; /* Tailwind green-400 */
+        }
+        .progress-bar-bg {
+            background-color: #374151; /* Tailwind gray-700 */
+        }
+        .progress-bar-fg {
+            background-color: #34D399; /* Tailwind green-400 */
+        }
+        .task-item {
+            border-left: 4px solid #34D399; /* Tailwind green-400 */
+            padding-left: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .task-item.break {
+            border-left-color: #FBBF24; /* Tailwind amber-400 */
+        }
+        .task-item.personal {
+            border-left-color: #60A5FA; /* Tailwind blue-400 */
+        }
+        .task-item.completed {
+            border-left-color: #4B5563; /* Tailwind gray-600 */
+            opacity: 0.6;
+        }
+        .task-item.current {
+            border-left-width: 6px;
+            font-weight: 600;
+        }
+
+        /* Ensure content fits on smaller screens */
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        @media (min-width: 640px) { /* sm */
+            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) { /* lg */
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-5xl mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="card header-card text-center">
+                <h2 class="text-xl font-semibold mb-2">Current Time</h2>
+                <p id="currentTime" class="text-3xl font-bold">--:--:-- --</p>
+                <p id="currentDate" class="text-sm"></p>
+            </div>
+            <div class="card header-card text-center">
+                <h2 class="text-xl font-semibold mb-2">Countdown to D-Day (May 18, 2026)</h2>
+                <div id="dDayCountdown" class="text-lg sm:text-xl font-bold">
+                    <span>--d</span> : <span>--h</span> : <span>--m</span> : <span>--s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card w-full max-w-5xl mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-center">Current Focus</h2>
+        <div id="currentTaskDisplay" class="text-center p-4 rounded-lg">
+            <p class="text-gray-400">Loading current task...</p>
+        </div>
+        <div id="currentTaskProgress" class="mt-4">
+            </div>
+    </div>
+
+    <div class="card w-full max-w-5xl">
+        <h2 class="text-2xl font-bold mb-4 text-center">Today's Agenda</h2>
+        <div id="scheduleDisplay" class="space-y-3">
+            <p class="text-gray-400">Loading schedule...</p>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const D_DAY_TARGET_DATE = new Date("2026-05-18T00:00:00");
+
+        const dailySchedule = [
+            // Weekday Schedule (Monday - Friday: 1-5, Saturday: 6, Sunday: 0)
+            { days: [1, 2, 3, 4, 5], startTime: "00:00", endTime: "07:00", taskName: "Sleep", type: "Personal" },
+            { days: [1, 2, 3, 4, 5], startTime: "07:00", endTime: "08:00", taskName: "Morning Routine (Wake up, Breakfast)", type: "Personal" },
+            { days: [1, 2, 3, 4, 5], startTime: "08:00", endTime: "10:00", taskName: "Physics Lecture", subject: "Physics", type: "Lecture" },
+            { days: [1, 2, 3, 4, 5], startTime: "10:00", endTime: "10:15", taskName: "Break", type: "Break" },
+            { days: [1, 2, 3, 4, 5], startTime: "10:15", endTime: "12:15", taskName: "Chemistry Lecture", subject: "Chemistry", type: "Lecture" },
+            { days: [1, 2, 3, 4, 5], startTime: "12:15", endTime: "13:30", taskName: "Lunch & Personal Care", type: "Personal" },
+            { days: [1, 2, 3, 4, 5], startTime: "13:30", endTime: "15:30", taskName: "Math Lecture", subject: "Math", type: "Lecture" },
+            { days: [1, 2, 3, 4, 5], startTime: "15:30", endTime: "15:45", taskName: "Break", type: "Break" },
+            { days: [1, 2, 3, 4, 5], startTime: "15:45", endTime: "17:45", taskName: "Physics Problem Solving", subject: "Physics", type: "Problem Solving" },
+            { days: [1, 2, 3, 4, 5], startTime: "17:45", endTime: "18:30", taskName: "Short Break / Snack", type: "Break" },
+            { days: [1, 2, 3, 4, 5], startTime: "18:30", endTime: "20:30", taskName: "Chemistry Problem Solving", subject: "Chemistry", type: "Problem Solving" },
+            { days: [1, 2, 3, 4, 5], startTime: "20:30", endTime: "22:30", taskName: "Math Problem Solving", subject: "Math", type: "Problem Solving" },
+            { days: [1, 2, 3, 4, 5], startTime: "22:30", endTime: "23:59", taskName: "Dinner & Wind Down", type: "Personal" },
+            
+            // Weekend Schedule (Saturday & Sunday)
+            { days: [0, 6], startTime: "00:00", endTime: "08:00", taskName: "Sleep", type: "Personal" },
+            { days: [0, 6], startTime: "08:00", endTime: "09:00", taskName: "Wake up, Breakfast", type: "Personal" },
+            { days: [0, 6], startTime: "09:00", endTime: "12:00", taskName: "Review & Planning / Free Study", type: "Study" },
+            { days: [0, 6], startTime: "12:00", endTime: "13:00", taskName: "Lunch", type: "Personal" },
+            { days: [0, 6], startTime: "13:00", endTime: "17:00", taskName: "Free Time / Hobbies / Errands", type: "Personal" },
+            { days: [0, 6], startTime: "17:00", endTime: "19:00", taskName: "Light Exercise / Outdoor Activity", type: "Personal" },
+            { days: [0, 6], startTime: "19:00", endTime: "20:00", taskName: "Dinner", type: "Personal" },
+            { days: [0, 6], startTime: "20:00", endTime: "22:00", taskName: "Relaxation / Social Time", type: "Personal" },
+            { days: [0, 6], startTime: "22:00", endTime: "23:59", taskName: "Prepare for Sleep", type: "Personal" },
+        ];
+
+        // --- DOM ELEMENTS ---
+        const currentTimeEl = document.getElementById('currentTime');
+        const currentDateEl = document.getElementById('currentDate');
+        const dDayCountdownEl = document.getElementById('dDayCountdown');
+        const currentTaskDisplayEl = document.getElementById('currentTaskDisplay');
+        const currentTaskProgressEl = document.getElementById('currentTaskProgress');
+        const scheduleDisplayEl = document.getElementById('scheduleDisplay');
+
+        // --- HELPER FUNCTIONS ---
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function timeStringToDate(timeStr, date = new Date()) {
+            const [hours, minutes] = timeStr.split(':');
+            const newDate = new Date(date);
+            newDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            return newDate;
+        }
+        
+        // --- CORE LOGIC ---
+        function updateClock() {
+            const now = new Date();
+            currentTimeEl.textContent = formatTime(now);
+            currentDateEl.textContent = formatDate(now);
+        }
+
+        function updateDDayCountdown() {
+            const now = new Date();
+            const timeLeft = D_DAY_TARGET_DATE - now;
+
+            if (timeLeft < 0) {
+                dDayCountdownEl.innerHTML = "<span>D-Day has arrived!</span>";
+                return;
+            }
+
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            dDayCountdownEl.innerHTML = `
+                <span>${days}d</span> : 
+                <span>${hours.toString().padStart(2, '0')}h</span> : 
+                <span>${minutes.toString().padStart(2, '0')}m</span> : 
+                <span>${seconds.toString().padStart(2, '0')}s</span>
+            `;
+        }
+
+        function getCurrentTask() {
+            const now = new Date();
+            const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ...
+            
+            for (const task of dailySchedule) {
+                if (!task.days.includes(currentDay)) {
+                    continue;
+                }
+
+                const startTime = timeStringToDate(task.startTime, now);
+                const endTime = timeStringToDate(task.endTime, now);
+                
+                // Handle tasks that span across midnight (e.g. 22:00 to 02:00)
+                // For this simplified version, we assume tasks end within the same day or at 23:59.
+                // A more robust solution would handle multi-day tasks.
+                if (endTime < startTime) { // e.g. endTime is 02:00 and startTime is 22:00
+                    // This logic is simplified; for tasks ending next day, more complex date handling is needed.
+                    // For now, assume tasks are within a 24hr window starting from 00:00.
+                    // If current time is after start OR before end (on the next day concept)
+                    // This part needs careful thought for proper overnight task handling.
+                    // For this version, we'll keep it simple: tasks are within the same day.
+                    // If a task is 22:30 - 23:59, it's fine.
+                }
+
+
+                if (now >= startTime && now < endTime) {
+                    return task;
+                }
+            }
+            return { taskName: "Free Time / Unscheduled", type: "Personal", startTime: "N/A", endTime: "N/A" };
+        }
+
+        function updateCurrentTaskDisplay() {
+            const task = getCurrentTask();
+            const now = new Date();
+
+            if (task) {
+                let subjectInfo = task.subject ? `(<span class="highlight-text">${task.subject}</span>)` : '';
+                currentTaskDisplayEl.innerHTML = `
+                    <h3 class="text-3xl font-bold">${task.taskName} ${subjectInfo}</h3>
+                    <p class="text-gray-400 text-lg">${task.startTime} - ${task.endTime}</p>
+                `;
+
+                // Progress Bar Logic
+                if (task.startTime !== "N/A") {
+                    const taskStartDate = timeStringToDate(task.startTime, now);
+                    const taskEndDate = timeStringToDate(task.endTime, now);
+                    
+                    // Ensure taskEndDate is after taskStartDate, especially for tasks ending at 23:59
+                    if (taskEndDate <= taskStartDate && task.endTime === "23:59") {
+                         taskEndDate.setDate(taskEndDate.getDate() + 1); // Effectively makes it end of day
+                         taskEndDate.setHours(23,59,59,999);
+                    }
+
+
+                    const totalDuration = taskEndDate - taskStartDate;
+                    const elapsedDuration = now - taskStartDate;
+                    
+                    let progressPercentage = 0;
+                    if (totalDuration > 0) {
+                         progressPercentage = Math.max(0, Math.min(100, (elapsedDuration / totalDuration) * 100));
+                    }
+
+
+                    const timeElapsed = new Date(elapsedDuration);
+                    const timeRemaining = new Date(totalDuration - elapsedDuration);
+
+                    const formatDuration = (ms) => {
+                        if (ms < 0) ms = 0;
+                        const h = Math.floor(ms / (1000 * 60 * 60));
+                        const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((ms % (1000 * 60)) / 1000);
+                        return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
+                    };
+                    
+                    currentTaskProgressEl.innerHTML = `
+                        <div class="text-sm text-gray-400 mb-1 flex justify-between">
+                           <span>Elapsed: ${formatDuration(elapsedDuration)}</span>
+                           <span>Remaining: ${formatDuration(totalDuration - elapsedDuration)}</span>
+                        </div>
+                        <div class="w-full progress-bar-bg rounded-full h-4 overflow-hidden">
+                            <div class="progress-bar-fg h-full rounded-full" style="width: ${progressPercentage}%;"></div>
+                        </div>
+                        <p class="text-center text-sm mt-1">${progressPercentage.toFixed(1)}% complete</p>
+                    `;
+                } else {
+                    currentTaskProgressEl.innerHTML = ""; // Clear progress if no specific task times
+                }
+
+
+            } else {
+                currentTaskDisplayEl.innerHTML = `<p class="text-xl">No current task scheduled. Enjoy your free time!</p>`;
+                currentTaskProgressEl.innerHTML = "";
+            }
+        }
+
+        function displayFullSchedule() {
+            const now = new Date();
+            const currentDay = now.getDay();
+            scheduleDisplayEl.innerHTML = ''; // Clear previous entries
+
+            const todayTasks = dailySchedule.filter(task => task.days.includes(currentDay))
+                                        .sort((a,b) => timeStringToDate(a.startTime) - timeStringToDate(b.startTime));
+
+            if (todayTasks.length === 0) {
+                scheduleDisplayEl.innerHTML = '<p>No tasks scheduled for today.</p>';
+                return;
+            }
+            
+            const currentTask = getCurrentTask();
+
+            todayTasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.classList.add('task-item', 'p-3', 'rounded-md', `bg-opacity-20`);
+                if (task.type === 'Break') taskEl.classList.add('break');
+                if (task.type === 'Personal') taskEl.classList.add('personal');
+
+                const taskStartTime = timeStringToDate(task.startTime, now);
+                const taskEndTime = timeStringToDate(task.endTime, now);
+
+                if (now >= taskEndTime) {
+                    taskEl.classList.add('completed');
+                } else if (currentTask && task.taskName === currentTask.taskName && task.startTime === currentTask.startTime) {
+                     taskEl.classList.add('current', 'bg-green-500', 'bg-opacity-30');
+                }
+
+
+                let subjectInfo = task.subject ? `(${task.subject})` : '';
+                taskEl.innerHTML = `
+                    <p class="font-semibold text-md">${task.taskName} ${subjectInfo}</p>
+                    <p class="text-sm text-gray-400">${task.startTime} - ${task.endTime}</p>
+                `;
+                scheduleDisplayEl.appendChild(taskEl);
+            });
+        }
+
+
+        // --- INITIALIZATION & INTERVALS ---
+        function initApp() {
+            updateClock();
+            updateDDayCountdown();
+            updateCurrentTaskDisplay();
+            displayFullSchedule(); // Display the full schedule once on load
+
+            setInterval(updateClock, 1000);
+            setInterval(updateDDayCountdown, 1000);
+            setInterval(() => {
+                updateCurrentTaskDisplay();
+                // Re-render schedule less frequently, or only when day changes / current task changes significantly
+                // For simplicity, we can update it along with current task or on a slightly longer interval
+                displayFullSchedule(); 
+            }, 5000); // Update current task and schedule view every 5 seconds
+        }
+
+        // Wait for the DOM to be fully loaded before running the script
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
