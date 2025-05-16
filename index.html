@@ -111,31 +111,33 @@
 
         const dailySchedule = [
             // Weekday Schedule (Monday - Friday: 1-5, Saturday: 6, Sunday: 0)
-            { days: [1, 2, 3, 4, 5], startTime: "00:00", endTime: "07:00", taskName: "Sleep", type: "Personal" },
-            { days: [1, 2, 3, 4, 5], startTime: "07:00", endTime: "08:00", taskName: "Morning Routine (Wake up, Breakfast)", type: "Personal" },
-            { days: [1, 2, 3, 4, 5], startTime: "08:00", endTime: "10:00", taskName: "Physics Lecture", subject: "Physics", type: "Lecture" },
-            { days: [1, 2, 3, 4, 5], startTime: "10:00", endTime: "10:15", taskName: "Break", type: "Break" },
-            { days: [1, 2, 3, 4, 5], startTime: "10:15", endTime: "12:15", taskName: "Chemistry Lecture", subject: "Chemistry", type: "Lecture" },
-            { days: [1, 2, 3, 4, 5], startTime: "12:15", endTime: "13:30", taskName: "Lunch & Personal Care", type: "Personal" },
-            { days: [1, 2, 3, 4, 5], startTime: "13:30", endTime: "15:30", taskName: "Math Lecture", subject: "Math", type: "Lecture" },
-            { days: [1, 2, 3, 4, 5], startTime: "15:30", endTime: "15:45", taskName: "Break", type: "Break" },
-            { days: [1, 2, 3, 4, 5], startTime: "15:45", endTime: "17:45", taskName: "Physics Problem Solving", subject: "Physics", type: "Problem Solving" },
-            { days: [1, 2, 3, 4, 5], startTime: "17:45", endTime: "18:30", taskName: "Short Break / Snack", type: "Break" },
-            { days: [1, 2, 3, 4, 5], startTime: "18:30", endTime: "20:30", taskName: "Chemistry Problem Solving", subject: "Chemistry", type: "Problem Solving" },
-            { days: [1, 2, 3, 4, 5], startTime: "20:30", endTime: "20:45", taskName: "Break", type: "Break" }, // New break
-            { days: [1, 2, 3, 4, 5], startTime: "20:45", endTime: "22:45", taskName: "Math Problem Solving", subject: "Math", type: "Problem Solving" }, // Adjusted start time
-            { days: [1, 2, 3, 4, 5], startTime: "22:45", endTime: "23:59", taskName: "Dinner & Wind Down", type: "Personal" }, // Adjusted start time (reduces duration)
+            { days: [1, 2, 3, 4, 5, 6], startTime: "00:00", endTime: "07:00", taskName: "Sleep", type: "Personal" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "07:00", endTime: "08:00", taskName: "Morning Routine (Wake up, Breakfast)", type: "Personal" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "08:00", endTime: "10:00", taskName: "Physics Lecture", subject: "Physics", type: "Lecture" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "10:00", endTime: "10:15", taskName: "Break", type: "Break" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "10:15", endTime: "12:15", taskName: "Chemistry Lecture", subject: "Chemistry", type: "Lecture" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "12:15", endTime: "13:30", taskName: "Lunch & Personal Care", type: "Personal" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "13:30", endTime: "15:30", taskName: "Math Lecture", subject: "Math", type: "Lecture" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "15:30", endTime: "15:45", taskName: "Break", type: "Break" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "15:45", endTime: "17:45", taskName: "Physics Problem Solving", subject: "Physics", type: "Problem Solving" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "17:45", endTime: "18:30", taskName: "Short Break / Snack", type: "Break" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "18:30", endTime: "20:30", taskName: "Chemistry Problem Solving", subject: "Chemistry", type: "Problem Solving" },
+            { days: [1, 2, 3, 4, 5, 6], startTime: "20:30", endTime: "20:45", taskName: "Break", type: "Break" }, // New break
+            { days: [1, 2, 3, 4, 5, 6], startTime: "20:45", endTime: "22:45", taskName: "Math Problem Solving", subject: "Math", type: "Problem Solving" }, // Adjusted start time
+            { days: [1, 2, 3, 4, 5, 6], startTime: "22:45", endTime: "23:59", taskName: "Dinner & Wind Down", type: "Personal" }, // Adjusted start time (reduces duration)
             
             // Weekend Schedule (Saturday & Sunday)
-            { days: [0, 6], startTime: "00:00", endTime: "08:00", taskName: "Sleep", type: "Personal" },
-            { days: [0, 6], startTime: "08:00", endTime: "09:00", taskName: "Wake up, Breakfast", type: "Personal" },
-            { days: [0, 6], startTime: "09:00", endTime: "12:00", taskName: "Review & Planning / Free Study", type: "Study" },
-            { days: [0, 6], startTime: "12:00", endTime: "13:00", taskName: "Lunch", type: "Personal" },
-            { days: [0, 6], startTime: "13:00", endTime: "17:00", taskName: "Free Time / Hobbies / Errands", type: "Personal" },
-            { days: [0, 6], startTime: "17:00", endTime: "19:00", taskName: "Light Exercise / Outdoor Activity", type: "Personal" },
-            { days: [0, 6], startTime: "19:00", endTime: "20:00", taskName: "Dinner", type: "Personal" },
-            { days: [0, 6], startTime: "20:00", endTime: "22:00", taskName: "Relaxation / Social Time", type: "Personal" },
-            { days: [0, 6], startTime: "22:00", endTime: "23:59", taskName: "Prepare for Sleep", type: "Personal" },
+            { days: [0], startTime: "00:00", endTime: "07:00", taskName: "Sleep", type: "Personal" },
+            { days: [0], startTime: "07:00", endTime: "08:00", taskName: "Wake up, Breakfast", type: "Personal" },
+            { days: [0], startTime: "08:00", endTime: "09:00", taskName: "Warm up / Revision", type: "Study" },
+            { days: [0], startTime: "09:00", endTime: "12:00", taskName: "Test / Timed Questions / Backlog", type: "Study" },
+            { days: [0], startTime: "12:00", endTime: "13:00", taskName: "Lunch", type: "Personal" },
+            { days: [0], startTime: "13:00", endTime: "17:00", taskName: "Lecture Revision", type: "Lecture" },
+            { days: [0], startTime: "17:00", endTime: "17:30", taskName: "Light Exercise / Outdoor Activity", type: "Personal" },
+            { days: [0], startTime: "17:30", endTime: "20:30", taskName: "Module Revision", type: "Problem" },
+            { days: [0], startTime: "20:30", endTime: "20:45", taskName: "Break", type: "Break" },
+            { days: [0], startTime: "20:45", endTime: "22:45", taskName: "Backlog", type: "Study" },
+            { days: [0], startTime: "22:45", endTime: "23:59", taskName: "Dinner + Prepare for Sleep", type: "Personal" },
         ];
 
         // --- DOM ELEMENTS ---
